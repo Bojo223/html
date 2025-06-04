@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <title>Prolog животни</title>
+    <style>
+        .animal-gif {
+            width: 250px;
+            margin-top: 20px;
+        }
+    </style>
+    <script src="https://unpkg.com/tau-prolog"></script>
+    <script src="https://unpkg.com/tau-prolog/modules/lists.js"></script>
+</head>
+<body>
+    <h2>Въведи Prolog заявка:</h2>
+    <input type="text" id="query" value="animal(X)." />
+    <button onclick="runQuery()">Изпълни</button>
+    <div id="output"></div>
+
+    <script>
+        // Пролог база от знания
+        const knowledge = `
+            animal(cat).
+            animal(dog).
+            animal(elephant).
+            is_mammal(X) :- animal(X).
+        `;
+
+        // Съответстващи GIF анимации
+        const animalAnimations = {
+            cat: '<img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" class="animal-gif" alt="Cat" />',
+            dog: '<img src="https://media.giphy.com/media/26xBwdIuRJiAIqHwA/giphy.gif" class="animal-gif" alt="Dog" />',
+            elephant: '<img src="https://media.giphy.com/media/3orieZBkC9UkwEzoSg/giphy.gif" class="animal-gif" alt="Elephant" />'
+        };
+
+        // Инициализиране на сесията
+        let session = pl.create(1000);
+        session.consult(knowledge);
+
+        function runQuery() {
+            const query = document.getElementById('query').value;
+            document.getElementById('output').innerHTML = "Изпълняване...";
+
+            session.query(query);
+            session.answers(answer => {
+                if (answer === false) {
+                    document.getElementById('output').innerHTML = "Няма резултати.";
+                } else {
+                    const vars = session.format_answer(answer);
+                    const match = /X\s=\s(\w+)/.exec(vars);
+                    if (match && animalAnimations[match[1]]) {
+                        document.getElementById('output').innerHTML = `
+                            Открито животно: <strong>${match[1]}</strong><br />
+                            ${animalAnimations[match[1]]}
+                        `;
+                    } else {
+                        document.getElementById('output').innerHTML = "Открит резултат, но няма GIF.";
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
